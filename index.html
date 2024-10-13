@@ -15,9 +15,11 @@
         <button id="captureBtn">사진 찍기</button>
     </div>
 
+    <button id="installBtn" style="display:none;">데스크탑에 설치하기</button>
+
     <script src="script.js"></script>
 
-    <!-- PWA를 위한 서비스 워커 등록 -->
+    <!-- PWA 설치를 위한 서비스 워커 등록 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -30,6 +32,31 @@
                     });
             });
         }
+
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 설치 프롬프트를 가로채서 저장
+            e.preventDefault();
+            deferredPrompt = e;
+            // 설치 버튼을 보이게 함
+            installBtn.style.display = 'block';
+
+            installBtn.addEventListener('click', () => {
+                // 저장한 프롬프트 실행
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('사용자가 PWA를 설치했습니다.');
+                    } else {
+                        console.log('사용자가 설치를 거부했습니다.');
+                    }
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
+            });
+        });
     </script>
 </body>
 </html>
